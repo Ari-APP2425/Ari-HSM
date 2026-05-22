@@ -159,11 +159,79 @@ td.right { text-align: right; }
 /* LOADING */
 .loading { text-align: center; padding: 30px; color: var(--muted); font-size: 0.8rem; }
 
+/* ARCHIVE */
+.archive-color { color: #64748b; }
+.badge-archived { background: #e2e8f0; color: #64748b; }
+.archive-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; margin-bottom: 14px; }
+.archive-toggle-icon { font-size: 0.8rem; color: var(--muted); transition: transform 0.2s; }
+.archive-toggle-icon.open { transform: rotate(90deg); }
+.archive-note { font-size: 0.7rem; color: var(--muted); margin-bottom: 14px; background: #f1f5f9; border-radius: 8px; padding: 8px 12px; }
+.btn-restore { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 4px 10px; font-size: 0.7rem; color: #64748b; cursor: pointer; }
+.btn-restore:hover { border-color: var(--accent); color: var(--accent); }
+
+/* HSM-CENTER CLOCK */
+.hsm-center-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #1e1c1a 0%, #2d2a26 100%);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 10px 20px;
+  min-width: 190px;
+  box-shadow: 0 0 18px rgba(184,115,42,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+.hsm-center-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+  opacity: 0.7;
+}
+.hsm-center-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.55rem;
+  color: #f5ead6;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-shadow: 0 0 18px rgba(212,148,60,0.35);
+}
+.hsm-dot {
+  color: var(--accent2);
+  margin: 0 1px;
+}
+.hsm-center-sub {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+}
+.hsm-sep {
+  color: #4a4640;
+  font-size: 0.75rem;
+}
+.hsm-clock {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--accent2);
+  letter-spacing: 0.08em;
+}
+.hsm-date {
+  font-size: 0.68rem;
+  color: #9a9080;
+  letter-spacing: 0.04em;
+}
+
 @media (max-width: 640px) {
   header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .hdr-stats { margin-left: 0; }
   .form-grid { grid-template-columns: 1fr; }
   .add-user-row { flex-direction: column; }
+  .hsm-center-block { min-width: unset; width: 100%; align-items: flex-start; flex-direction: row; gap: 14px; padding: 8px 14px; }
+  .hsm-clock { font-size: 1.1rem; }
 }
 </style>
 </head>
@@ -205,6 +273,17 @@ td.right { text-align: right; }
       <span class="role-badge" id="hdr-role"></span>
       <button class="logout-btn" onclick="doLogout()">Dil</button>
     </div>
+
+    <!-- HSM-CENTER CLOCK -->
+    <div class="hsm-center-block">
+      <div class="hsm-center-name">HSM<span class="hsm-dot">&#xB7;</span>Center</div>
+      <div class="hsm-center-sub">
+        <span class="hsm-date" id="hsm-date">—</span>
+        <span class="hsm-sep">|</span>
+        <span class="hsm-clock" id="hsm-clock">00:00:00</span>
+      </div>
+    </div>
+
     <div class="hdr-stats">
       <div class="hdr-stat"><div class="hdr-stat-val" id="hdr-count">0</div><div class="hdr-stat-lbl">Sot</div></div>
       <div class="hdr-stat"><div class="hdr-stat-val" id="hdr-today">0</div><div class="hdr-stat-lbl">Fitimi Sot</div></div>
@@ -256,7 +335,7 @@ td.right { text-align: right; }
         <div class="f"><label>Klienti</label><input type="text" id="e-client" placeholder="Klienti" /></div>
         <div class="f"><label>Pershkrimi</label><input type="text" id="e-desc" placeholder="pershkrimi" /></div>
         <div class="f"><label>Sasia</label><input type="number" id="e-qty" value="1" step="0.01" min="0.01" /></div>
-        <div class="f"><label>Cmimi/Njesi</label><div class="price-wrap"><input type="number" id="e-price" placeholder="0" /><span class="price-unit">ALL</span></div></div>
+        <div class="f"><label>Cmimi/Njesi</label><div class="price-wrap"><input type="number" id="e-price" placeholder="0" /><span class="price-unit">L</span></div></div>
         <div style="display:flex;align-items:flex-end;"><button class="btn-add" onclick="addEntry()">+ Shto</button></div>
       </div>
       <div class="form-error" id="entry-error"></div>
@@ -280,6 +359,34 @@ td.right { text-align: right; }
     <div class="total-bar">
       <span style="font-size:0.78rem;color:var(--muted);">Total i filtruar:</span>
       <span class="total-val" id="filtered-total">0 ALL</span>
+    </div>
+
+    <!-- ARKIVA (vetëm Admin) -->
+    <div class="card" id="archive-panel" style="display:none; margin-top:10px;">
+      <div class="archive-toggle" onclick="toggleArchive()">
+        <span class="archive-toggle-icon" id="archive-icon">▶</span>
+        <div class="card-title archive-color" style="margin-bottom:0;">🗄 Arkiva — Punë >30 ditë</div>
+      </div>
+      <div id="archive-content" style="display:none;">
+        <div class="archive-note">📌 Këto punë janë mbi 30 ditë të vjetra dhe janë ruajtur automatikisht në arkivë. Mund t'i ekspozoni ose fshini.</div>
+        <div class="filters">
+          <input type="text" id="af-text" placeholder="Kërko në arkivë..." oninput="renderArchive()" />
+          <input type="date" id="af-from" onchange="renderArchive()" />
+          <input type="date" id="af-to" onchange="renderArchive()" />
+          <button class="btn-export" onclick="exportArchiveCSV()">⬇ Eksporto Arkivën</button>
+          <span class="entries-count" id="archive-count"></span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Klienti</th><th>Pershkrimi</th><th>Sasia</th><th>Cmimi</th><th>Totali</th><th>Perdoruesi</th><th>Veprime</th></tr></thead>
+            <tbody id="archive-tbody"><tr><td colspan="8" class="loading">Duke ngarkuar...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="total-bar">
+          <span style="font-size:0.78rem;color:var(--muted);">Total arkivë:</span>
+          <span class="total-val" id="archive-total" style="color:#64748b;">0 ALL</span>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -326,7 +433,7 @@ td.right { text-align: right; }
       <div class="f"><label>Klienti</label><input type="text" id="em-client" /></div>
       <div class="f"><label>Pershkrimi</label><input type="text" id="em-desc" /></div>
       <div class="f"><label>Sasia</label><input type="number" id="em-qty" step="0.01" /></div>
-      <div class="f"><label>Cmimi/Njesi (ALL)</label><input type="number" id="em-price" /></div>
+      <div class="f"><label>Cmimi/Njesi (L)</label><input type="number" id="em-price" /></div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeEditModal()">Anulo</button>
@@ -348,10 +455,12 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 let currentRole = 'user';
 let allEntries = [];
+let allArchivedEntries = [];
 let allSchedules = [];
 let notifGranted = false;
 let reminderTimer = null;
 let editingEntryId = null;
+let userNames = {};
 
 // --- AUTH ---
 function switchAuthTab(tab) {
@@ -416,7 +525,7 @@ async function initApp(user) {
   currentRole = roleData?.role || 'user';
   const roleEl = document.getElementById('hdr-role');
   roleEl.textContent = currentRole.toUpperCase();
-  if (currentRole === 'admin') { roleEl.classList.add('admin'); document.getElementById('admin-panel').style.display = 'block'; loadUsers(); }
+  if (currentRole === 'admin') { roleEl.classList.add('admin'); document.getElementById('admin-panel').style.display = 'block'; document.getElementById('archive-panel').style.display = 'block'; loadUsers(); }
 
   if ('Notification' in window) {
     if (Notification.permission === 'granted') notifGranted = true;
@@ -431,8 +540,24 @@ async function initApp(user) {
 // --- ENTRIES ---
 async function loadEntries() {
   const { data } = await sb.from('entries').select('*').order('date', { ascending: false });
-  allEntries = data || [];
+  const all = data || [];
+
+  // Split: >30 ditë → arkivë, jo → aktive
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+
+  allEntries = all.filter(e => e.date >= cutoffStr);
+  allArchivedEntries = all.filter(e => e.date < cutoffStr);
+
+  // Ndrto cache emrash
+  all.forEach(e => {
+    if (e.user_id && e.user_email && !userNames[e.user_id]) {
+      userNames[e.user_id] = e.user_email.split('@')[0];
+    }
+  });
   renderEntries();
+  renderArchive();
   updateHeader();
 }
 
@@ -467,7 +592,7 @@ function renderEntries() {
       <td class="right">${e.quantity}</td>
       <td class="right">${fmtPrice(e.unit_price)}</td>
       <td class="right"><strong>${fmtPrice(total)}</strong></td>
-      <td><span class="badge ${e.user_email === currentUser.email ? 'badge-admin' : 'badge-user'}">${esc(e.user_email || '')}</span></td>
+      <td><span class="badge ${e.user_email === currentUser.email ? 'badge-admin' : 'badge-user'}">${esc(userNames[e.user_id] || e.user_email || '')}</span></td>
       <td class="right">
         ${canEdit ? `<button class="btn-icon edit" onclick="openEditModal('${e.id}')">✎</button>` : ''}
         ${canEdit ? `<button class="btn-icon del" onclick="deleteEntry('${e.id}')">🗑</button>` : ''}
@@ -691,11 +816,98 @@ function exportCSV() {
   URL.revokeObjectURL(a.href);
 }
 
+// --- ARCHIVE ---
+function toggleArchive() {
+  const content = document.getElementById('archive-content');
+  const icon = document.getElementById('archive-icon');
+  const isOpen = content.style.display !== 'none';
+  content.style.display = isOpen ? 'none' : 'block';
+  icon.classList.toggle('open', !isOpen);
+}
+
+function renderArchive() {
+  const tbody = document.getElementById('archive-tbody');
+  if (!tbody) return;
+
+  const ft = (document.getElementById('af-text')?.value || '').toLowerCase();
+  const ff = document.getElementById('af-from')?.value || '';
+  const ft2 = document.getElementById('af-to')?.value || '';
+
+  let filtered = allArchivedEntries.filter(e => {
+    const mt = !ft || e.description.toLowerCase().includes(ft) || e.client.toLowerCase().includes(ft);
+    const mf = !ff || e.date >= ff;
+    const mt2 = !ft2 || e.date <= ft2;
+    return mt && mf && mt2;
+  });
+
+  document.getElementById('archive-count').textContent = filtered.length + ' hyrje';
+  const sum = filtered.reduce((s, e) => s + (e.total || e.quantity * e.unit_price), 0);
+  document.getElementById('archive-total').textContent = fmtPrice(sum);
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Arkiva është bosh</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(e => {
+    const total = e.total || (e.quantity * e.unit_price);
+    return `<tr style="opacity:0.8;">
+      <td>${fmtDate(e.date)}</td>
+      <td>${esc(e.client)}</td>
+      <td>${esc(e.description)}</td>
+      <td class="right">${e.quantity}</td>
+      <td class="right">${fmtPrice(e.unit_price)}</td>
+      <td class="right"><strong>${fmtPrice(total)}</strong></td>
+      <td><span class="badge badge-archived">${esc(userNames[e.user_id] || e.user_email || '')}</span></td>
+      <td class="right">
+        <button class="btn-icon del" onclick="deleteArchivedEntry('${e.id}')" title="Fshi">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteArchivedEntry(id) {
+  if (!confirm('Fshi përgjithmonë këtë punë nga arkiva?')) return;
+  await sb.from('entries').delete().eq('id', id);
+  await loadEntries();
+}
+
+function exportArchiveCSV() {
+  if (!allArchivedEntries.length) { alert('Arkiva është bosh'); return; }
+  const rows = [['Data', 'Klienti', 'Pershkrimi', 'Sasia', 'Cmimi/Njesi', 'Totali', 'Perdoruesi']];
+  allArchivedEntries.forEach(e => rows.push([e.date, e.client, e.description, e.quantity, e.unit_price, e.total || e.quantity * e.unit_price, e.user_email || '']));
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'arkiva_' + today() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 // --- HELPERS ---
 function today() { return new Date().toISOString().split('T')[0]; }
 function fmtDate(str) { if (!str) return ''; const [y,m,d] = str.split('-'); return `${d}.${m}.${y}`; }
-function fmtPrice(n) { return Number(n || 0).toLocaleString('sq-AL') + ' ALL'; }
+function fmtPrice(n) { return 'L ' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// --- HSM-CENTER CLOCK ---
+function updateHSMClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  const clockEl = document.getElementById('hsm-clock');
+  if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
+
+  const days = ['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
+  const months = ['Jan','Shk','Mar','Pri','Maj','Qer','Kor','Gus','Sht','Tet','Nën','Dhj'];
+  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const dateEl = document.getElementById('hsm-date');
+  if (dateEl) dateEl.textContent = dateStr;
+}
+updateHSMClock();
+setInterval(updateHSMClock, 1000);
 
 // --- AUTO LOGIN CHECK ---
 (async () => {
