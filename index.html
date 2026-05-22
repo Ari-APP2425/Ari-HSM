@@ -57,10 +57,32 @@ header {
 }
 .hdr-brand { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--accent); }
 .hdr-sub { font-size: 0.55rem; color: var(--muted); letter-spacing: 0.15em; }
-.hdr-stats { display: flex; gap: 24px; margin-left: auto; }
-.hdr-stat { text-align: right; }
-.hdr-stat-val { font-family: 'DM Mono', monospace; font-size: 1.25rem; color: #7a3e00; font-weight: 700; letter-spacing: 0.02em; }
-.hdr-stat-lbl { font-size: 0.62rem; color: #5a5248; text-transform: uppercase; font-weight: 600; letter-spacing: 0.1em; }
+.hdr-stats { display: flex; gap: 6px; margin-left: auto; }
+.hdr-stat {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #faf7f2 0%, #f2ece0 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 20px;
+  min-width: 110px;
+  position: relative;
+  overflow: hidden;
+}
+.hdr-stat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.hdr-stat-val { font-family: 'DM Mono', monospace; font-size: 1.1rem; color: #7a3e00; font-weight: 700; letter-spacing: 0.02em; line-height: 1.2; }
+.hdr-stat-lbl { font-size: 0.55rem; color: #8a7a68; text-transform: uppercase; font-weight: 600; letter-spacing: 0.12em; margin-top: 3px; }
+.hdr-stat-icon { font-size: 0.95rem; margin-bottom: 2px; }
+.hdr-stat-total {
+  border-color: var(--accent) !important;
+  background: linear-gradient(135deg, #fff8f0 0%, #fdefd8 100%) !important;
+}
+.hdr-stat-total .hdr-stat-val { color: var(--accent); }
+.hdr-stat-total .hdr-stat-lbl { color: var(--accent2); }
 .user-chip { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 40px; padding: 5px 12px; font-size: 0.75rem; }
 .role-badge { font-size: 0.62rem; padding: 3px 8px; border-radius: 20px; background: var(--accent); color: white; font-weight: 600; }
 .role-badge.admin { background: var(--admin-color); }
@@ -285,9 +307,21 @@ td.right { text-align: right; }
     </div>
 
     <div class="hdr-stats">
-      <div class="hdr-stat"><div class="hdr-stat-val" id="hdr-count">0</div><div class="hdr-stat-lbl">Sot</div></div>
-      <div class="hdr-stat"><div class="hdr-stat-val" id="hdr-today">0</div><div class="hdr-stat-lbl">Fitimi Sot</div></div>
-      <div class="hdr-stat"><div class="hdr-stat-val" id="hdr-total">0</div><div class="hdr-stat-lbl">Total</div></div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-icon">&#128203;</div>
+        <div class="hdr-stat-val" id="hdr-count">0</div>
+        <div class="hdr-stat-lbl">Pun&#235; Sot</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-icon">&#128176;</div>
+        <div class="hdr-stat-val" id="hdr-today">0</div>
+        <div class="hdr-stat-lbl">Fitimi Sot</div>
+      </div>
+      <div class="hdr-stat hdr-stat-total">
+        <div class="hdr-stat-icon">&#128202;</div>
+        <div class="hdr-stat-val" id="hdr-total">0</div>
+        <div class="hdr-stat-lbl">Total</div>
+      </div>
     </div>
   </header>
 
@@ -678,7 +712,7 @@ function renderSchedules() {
       <td><span class="badge ${priClass}">${s.priority}</span></td>
       <td><span class="badge ${s.status === 'completed' ? 'badge-done' : 'badge-pending'}">${s.status === 'completed' ? '✓ Përfunduar' : '⏳ Në Pritje'}</span></td>
       <td class="right">
-        ${canEdit && s.status !== 'completed' ? `<button class="btn-icon done" onclick="completeSchedule('${s.id}')">✔</button>` : ''}
+        ${s.status !== 'completed' ? `<button class="btn-icon done" onclick="completeSchedule('${s.id}')">✔</button>` : ''}
         ${canEdit ? `<button class="btn-icon del" onclick="deleteSchedule('${s.id}')">🗑</button>` : ''}
       </td>
     </tr>`;
