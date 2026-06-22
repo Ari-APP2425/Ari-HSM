@@ -1,0 +1,24 @@
+{
+  "name": "Regjister Pune HSM",
+  "short_name": "Ari-HSM",
+  "description": "Regjistri i Punës - HSM Center Shkodra",
+  "start_url": "/Ari-HSM/",
+  "display": "standalone",
+  "background_color": "#dde3ed",
+  "theme_color": "#2d7d6f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://ari-app2425.github.io/Ari-HSM/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ari-app2425.github.io/Ari-HSM/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
