@@ -48,6 +48,7 @@
   --shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { max-width: 100%; overflow-x: hidden; }
 body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif; min-height: 100vh; }
 
 /* AUTH */
@@ -430,8 +431,8 @@ td.right { text-align: right; }
   }
 
   /* Tabela — kolona kritike, fsheh ato jo-esenciale, font më i vogël */
-  table { min-width: unset; }
-  th, td { padding: 7px 6px; font-size: 0.7rem; }
+  table { min-width: unset; table-layout: fixed; width: 100%; }
+  th, td { padding: 7px 6px; font-size: 0.7rem; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
   .badge { font-size: 0.58rem; padding: 2px 7px; }
   .reminder-chip { font-size: 0.54rem; padding: 1px 5px; }
 
@@ -2849,22 +2850,27 @@ function renderMaterials() {
 function editMaterialById(id) {
   const found = [...allMaterials, ...allArchivedMaterials].find(e => e.id == id);
   if (!found) { alert('Material nuk u gjet!'); return; }
-  editMaterialPrice(id, found.price || 0, found.quantity || 1, found.material_name || '');
+  editMaterialPrice(id, found.price || 0, found.quantity || 1, found.material_name || '', found.client || '');
 }
 
-async function editMaterialPrice(id, currentPrice, qty, currentName) {
+async function editMaterialPrice(id, currentPrice, qty, currentName, currentClient) {
   // Nëse currentName nuk kalon, gjeje nga allMaterials
   if (currentName === undefined) {
     const found = [...allMaterials, ...allArchivedMaterials].find(e => e.id == id);
     currentName = found?.material_name || '';
     qty = found?.quantity ?? qty;
     currentPrice = found?.price ?? currentPrice;
+    currentClient = found?.client || '';
   }
+  if (currentClient === undefined) currentClient = '';
   const modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);';
   modal.innerHTML = `
     <div style="background:white;border-radius:18px;padding:28px 24px;min-width:300px;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);font-family:Sora,sans-serif;">
       <div style="font-weight:700;font-size:1rem;color:#7c3aed;margin-bottom:20px;">✏️ Modifiko Materialin</div>
+      <label style="font-size:0.68rem;color:#6b7a8d;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px;">Klienti</label>
+      <input id="ep-client" type="text" value="${esc(currentClient)}"
+        style="width:100%;padding:10px 12px;border:1.5px solid #bcc8dc;border-radius:9px;font-size:0.88rem;outline:none;margin-bottom:12px;font-family:Sora,sans-serif;">
       <label style="font-size:0.68rem;color:#6b7a8d;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px;">Emërtimi Materialit</label>
       <input id="ep-name" type="text" value="${esc(currentName)}"
         style="width:100%;padding:10px 12px;border:1.5px solid #bcc8dc;border-radius:9px;font-size:0.88rem;outline:none;margin-bottom:12px;font-family:Sora,sans-serif;">
@@ -2890,6 +2896,7 @@ async function editMaterialPrice(id, currentPrice, qty, currentName) {
     </div>`;
   document.body.appendChild(modal);
 
+  const inpClient = modal.querySelector('#ep-client');
   const inpName = modal.querySelector('#ep-name');
   const inpQty = modal.querySelector('#ep-qty');
   const inpPrice = modal.querySelector('#ep-price');
@@ -2903,17 +2910,19 @@ async function editMaterialPrice(id, currentPrice, qty, currentName) {
   inpPrice.addEventListener('input', updatePreview);
   inpQty.addEventListener('input', updatePreview);
   updatePreview();
-  inpName.focus(); inpName.select();
+  inpClient.focus(); inpClient.select();
 
   modal.querySelector('#ep-save').addEventListener('click', async () => {
+    const newClient = inpClient.value.trim();
     const newName = inpName.value.trim();
     const newQty = parseFloat(inpQty.value);
     const newPrice = parseFloat(inpPrice.value);
+    if (!newClient) { inpClient.style.borderColor='#c0392b'; return; }
     if (!newName) { inpName.style.borderColor='#c0392b'; return; }
     if (isNaN(newQty) || newQty < 0) { inpQty.style.borderColor='#c0392b'; return; }
     if (isNaN(newPrice) || newPrice < 0) { inpPrice.style.borderColor='#c0392b'; return; }
     modal.querySelector('#ep-save').textContent = '...';
-    await sb.from('materials').update({ material_name: newName, quantity: newQty, price: newPrice }).eq('id', id);
+    await sb.from('materials').update({ client: newClient, material_name: newName, quantity: newQty, price: newPrice }).eq('id', id);
     modal.remove();
     await loadMaterials();
   });
@@ -3148,7 +3157,10 @@ function renderAriEntries() {
     <td class="right">${fmtPrice(e.unit_price)}</td>
     <td class="right"><strong>${fmtPrice(e.total)}</strong></td>
     <td><span class="badge ${e.payment_status === 'e_paguar' ? 'badge-done' : 'badge-pending'}" ${canEditAri ? `style="cursor:pointer" onclick="toggleAriPayment('${e.id}','${e.payment_status}')"` : ''}>${e.payment_status === 'e_paguar' ? '✅ E Paguar' : '💰 Pa Paguar'}</span></td>
-    <td class="right">${canEditAri ? `<button class="btn-icon del" onclick="deleteAriEntry('${e.id}')">🗑</button>` : ''}</td>
+    <td class="right" style="display:flex;gap:4px;justify-content:flex-end;align-items:center;">
+      ${canEditAri ? `<button class="btn-icon edit" onclick="openEditModal('${e.id}')" title="Edito">✎</button>` : ''}
+      ${canEditAri ? `<button class="btn-icon del" onclick="deleteAriEntry('${e.id}')">🗑</button>` : ''}
+    </td>
   </tr>`).join('');
 }
 
