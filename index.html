@@ -131,6 +131,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
 .btn-add:hover { background: var(--accent2); }
 .btn-schedule { background: var(--schedule-color); color: white; border: none; border-radius: 9px; padding: 9px 16px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
 .btn-schedule:hover { background: #6d28d9; }
+.btn-schedule:disabled { background: #b7b0e0; cursor: not-allowed; opacity: 0.7; }
 .form-error { color: var(--danger); font-size: 0.68rem; margin-top: 6px; }
 
 /* SCHEDULE HEADER */
@@ -305,6 +306,21 @@ td.right { text-align: right; }
 .section-collapse-icon { font-size: 0.7rem; transition: transform 0.25s; display: inline-block; }
 .section-collapse-icon.collapsed { transform: rotate(-90deg); }
 .section-body-collapsible { overflow: hidden; }
+.section-body-collapsible.hidden { display: none; }
+
+/* SCHEDULE DISABLED NOTICE */
+.sched-disabled-note {
+  background: #f1f0fb; border: 1px dashed var(--schedule-color); border-radius: 12px;
+  padding: 16px; text-align: center; font-size: 0.8rem; color: #5c4fc7;
+}
+.btn-sched-toggle {
+  background: none; border: 1px solid var(--schedule-color); color: var(--schedule-color);
+  border-radius: 8px; padding: 6px 14px; font-size: 0.72rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-sched-toggle:hover { background: var(--schedule-color); color: white; }
+.btn-sched-toggle.is-enabled { background: var(--schedule-color); color: white; }
+.btn-sched-toggle.is-enabled:hover { background: #4a3f9e; }
 
 /* ARKIVAT HORIZONTALE NE FUND */
 .archives-row {
@@ -389,30 +405,35 @@ td.right { text-align: right; }
 
 /* ── ANDROID / TOUCH FRIENDLY ─────────────────────────── */
 @media (max-width: 768px) {
-  /* Butonë të mëdhenj për gisht */
-  .btn-add, .btn-mat, .btn-schedule, .btn-main, .btn-save, .btn-cancel {
-    min-height: 48px; font-size: 0.95rem; padding: 12px 18px;
-  }
-  .btn-icon { min-width: 40px; min-height: 40px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; }
-  .btn-export { min-height: 44px; font-size: 0.82rem; padding: 10px 14px; }
-  .logout-btn { min-height: 38px; padding: 8px 14px; font-size: 0.78rem; }
+  html { font-size: 15px; }
 
-  /* Input / select më të mëdhenj */
+  /* Butonë të mëdhenj për gisht, por jo mbinjerëzuar */
+  .btn-add, .btn-mat, .btn-schedule, .btn-main, .btn-save, .btn-cancel, .btn-ari-add {
+    min-height: 40px; font-size: 0.8rem; padding: 9px 14px;
+  }
+  .btn-icon { min-width: 34px; min-height: 34px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; }
+  .btn-export { min-height: 36px; font-size: 0.72rem; padding: 7px 12px; }
+  .logout-btn { min-height: 32px; padding: 6px 12px; font-size: 0.7rem; }
+
+  /* Input / select — kompakt */
   .f input, .f select, .f textarea,
   .field input, .field select,
   .filters input, .filters select {
-    min-height: 46px; font-size: 0.95rem; padding: 11px 14px;
+    min-height: 38px; font-size: 0.82rem; padding: 8px 10px;
   }
 
   /* Rreshtat e punës — stack në kolona */
   #entry-rows > div,
-  #mm-rows > div {
+  #mm-rows > div,
+  #ari-rows > div {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  /* Tabela — kolona kritike, fsheh ato jo-esenciale */
+  /* Tabela — kolona kritike, fsheh ato jo-esenciale, font më i vogël */
   table { min-width: unset; }
-  th, td { padding: 10px 8px; font-size: 0.78rem; }
+  th, td { padding: 7px 6px; font-size: 0.7rem; }
+  .badge { font-size: 0.58rem; padding: 2px 7px; }
+  .reminder-chip { font-size: 0.54rem; padding: 1px 5px; }
 
   /* Modalet — full screen në Android */
   .modal, .modal-box {
@@ -420,21 +441,43 @@ td.right { text-align: right; }
     max-width: 100% !important; width: 100% !important;
     position: fixed; bottom: 0; left: 0; right: 0;
     max-height: 92vh; overflow-y: auto;
+    padding: 18px 14px;
   }
+  .modal-title { font-size: 0.95rem; }
   .modal-overlay, .edit-modal-overlay {
     align-items: flex-end !important;
   }
 
-  /* Card padding */
-  .card { padding: 16px 12px; }
-  main { padding: 16px 12px 80px; }
+  /* Card padding — më kompakt */
+  .card { padding: 12px 10px; border-radius: 14px; }
+  main { padding: 10px 8px 70px; }
+  .group-card { border-radius: 14px; margin-bottom: 14px; }
+  .group-card-header { padding: 12px 14px; gap: 8px; }
+  .group-card-title { font-size: 0.9rem; gap: 6px; }
+  .group-card-toggle { padding: 3px 8px; font-size: 0.62rem; }
+  .group-inner { padding: 14px 12px; }
+  .group-inner-title { font-size: 0.58rem; margin-bottom: 10px; }
+
+  .ari-card-header { margin: -12px -10px 12px -10px; padding: 12px 14px; }
 
   /* Total bar */
-  .total-val { font-size: 1.1rem; }
+  .total-val, .ari-total-val { font-size: 0.95rem; }
+  .total-bar, .ari-total-bar { padding: 10px 12px; gap: 8px; }
 
   /* Badge + filters wrap */
-  .filters { gap: 6px; }
-  .filters input { flex: 1; min-width: 130px; }
+  .filters { gap: 6px; margin-bottom: 10px; }
+  .filters input, .filters select { flex: 1; min-width: 110px; font-size: 0.76rem; padding: 7px 9px; }
+  .entries-count { font-size: 0.62rem; }
+
+  /* Form grid kompakt */
+  .form-grid { gap: 8px; }
+  .f label { font-size: 0.54rem; }
+
+  /* HSM clock më kompakt */
+  .hsm-center-block { padding: 6px 10px; }
+  .hsm-center-name { font-size: 1rem; }
+  .hsm-clock { font-size: 0.8rem; }
+  .hsm-date { font-size: 0.6rem; }
 
   /* Admin users table — stack rows */
   .users-tbl thead { display: none; }
@@ -443,14 +486,23 @@ td.right { text-align: right; }
     grid-template-columns: 1fr auto auto;
     align-items: center;
     gap: 6px;
-    padding: 10px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--border);
   }
-  .users-tbl td { padding: 0; border: none; font-size: 0.82rem; }
+  .users-tbl td { padding: 0; border: none; font-size: 0.76rem; }
   .users-tbl td:first-child { grid-column: 1; font-weight: 600; }
-  .users-tbl td:nth-child(2) { grid-column: 1; font-size: 0.72rem; color: var(--muted); margin-top: -4px; }
+  .users-tbl td:nth-child(2) { grid-column: 1; font-size: 0.66rem; color: var(--muted); margin-top: -4px; }
   .users-tbl td:nth-child(3) { grid-column: 2; grid-row: 1 / 3; }
   .users-tbl td:nth-child(4) { grid-column: 3; grid-row: 1 / 3; }
+
+  /* Mat group headers kompakt */
+  .mat-group-header { padding: 8px 10px !important; }
+  .mat-status-btn { font-size: 0.64rem; padding: 3px 9px; }
+}
+
+@media (max-width: 420px) {
+  #entry-rows > div, #mm-rows > div, #ari-rows > div { grid-template-columns: 1fr !important; }
+  .hdr-stats { display: none !important; }
 }
 </style>
 </head>
@@ -519,16 +571,16 @@ td.right { text-align: right; }
 
     <!-- ADMIN PANEL -->
     <div class="group-card" id="admin-panel" style="display:none;">
-      <div class="group-card-header is-open" onclick="toggleGroupCard('admin-panel')">
+      <div class="group-card-header" onclick="toggleGroupCard('admin-panel')">
         <div class="group-card-title" style="color:var(--admin-color);">
           👑 Admin Panel
         </div>
         <span class="group-card-toggle" id="admin-panel-toggle">
-          <span class="group-card-icon" id="admin-panel-icon">▼</span>
-          <span id="admin-panel-label">Minimizo</span>
+          <span class="group-card-icon collapsed" id="admin-panel-icon">▼</span>
+          <span id="admin-panel-label">Zgjero</span>
         </span>
       </div>
-      <div class="group-card-body" id="admin-panel-body">
+      <div class="group-card-body hidden" id="admin-panel-body">
         <div class="group-inner">
           <div class="admin-note">⚠️ Si admin mund të modifikoni dhe fshini çdo punë.</div>
           <table class="users-tbl">
@@ -551,19 +603,24 @@ td.right { text-align: right; }
 
     <!-- SCHEDULE -->
     <div class="group-card" id="sched-group-card">
-      <div class="group-card-header is-open" onclick="toggleGroupCard('sched-group-card')">
+      <div class="group-card-header" onclick="toggleGroupCard('sched-group-card')">
         <div class="group-card-title" style="color:var(--schedule-color);">
           📅 Punë të Planifikuara
         </div>
-        <div onclick="event.stopPropagation()">
-          <button class="btn-schedule" onclick="openSchedModal()">+ Planifiko</button>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-schedule" id="sched-add-btn" onclick="openSchedModal()">+ Planifiko</button>
+          <button class="btn-sched-toggle" id="sched-admin-toggle" style="display:none;" onclick="toggleScheduleFeature()">🔒 Aktivizo</button>
         </div>
         <span class="group-card-toggle" id="sched-group-card-toggle">
-          <span class="group-card-icon" id="sched-group-card-icon">▼</span>
-          <span id="sched-group-card-label">Minimizo</span>
+          <span class="group-card-icon collapsed" id="sched-group-card-icon">▼</span>
+          <span id="sched-group-card-label">Zgjero</span>
         </span>
       </div>
-      <div class="group-card-body" id="sched-group-card-body">
+      <div class="group-card-body hidden" id="sched-group-card-body">
+        <div class="group-inner" id="sched-disabled-notice" style="display:none;">
+          <div class="sched-disabled-note">🔒 Planifikimi i punëve është i çaktivizuar për momentin. Kontaktoni adminin nëse ju duhet.</div>
+        </div>
+        <div id="sched-active-content">
         <div class="group-inner">
           <div class="tbl-wrap">
             <table>
@@ -597,6 +654,7 @@ td.right { text-align: right; }
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
 
@@ -610,13 +668,13 @@ td.right { text-align: right; }
             <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ADMIN</div>
           </div>
           <span class="section-collapse-btn" id="ari-collapse-btn">
-            <span class="section-collapse-icon" id="ari-collapse-icon">▼</span>
-            <span id="ari-collapse-label">Minimizo</span>
+            <span class="section-collapse-icon collapsed" id="ari-collapse-icon">▼</span>
+            <span id="ari-collapse-label">Zgjero</span>
           </span>
         </div>
         <button id="ari-add-btn" class="btn-ari-add" onclick="event.stopPropagation();toggleAriForm()" style="margin-left:12px;">+ Shto Punë</button>
       </div>
-      <div id="ari-section-body" class="section-body-collapsible">
+      <div id="ari-section-body" class="section-body-collapsible hidden">
 
       <!-- FORMA E SHTIMIT -->
       <div class="ari-form-wrap" id="ari-form-wrap" style="display:none;">
@@ -721,7 +779,7 @@ td.right { text-align: right; }
 
     <!-- 3. GRUP: MATERIALET + ARKIVA E MATERIALEVE -->
     <div class="group-card" id="mat-group-card">
-      <div class="group-card-header is-open" onclick="toggleGroupCard('mat-group-card')">
+      <div class="group-card-header" onclick="toggleGroupCard('mat-group-card')">
         <div class="group-card-title mat-color">
           🔧 Materialet e Përdorura
         </div>
@@ -729,11 +787,11 @@ td.right { text-align: right; }
           <button class="btn-mat" onclick="openMatModal()" style="margin-right:10px;">+ Shto Klient</button>
         </div>
         <span class="group-card-toggle" id="mat-group-card-toggle">
-          <span class="group-card-icon" id="mat-group-card-icon">▼</span>
-          <span id="mat-group-card-label">Minimizo</span>
+          <span class="group-card-icon collapsed" id="mat-group-card-icon">▼</span>
+          <span id="mat-group-card-label">Zgjero</span>
         </span>
       </div>
-      <div class="group-card-body" id="mat-group-card-body">
+      <div class="group-card-body hidden" id="mat-group-card-body">
 
         <!-- MATERIALET AKTIVE -->
         <div class="group-inner">
@@ -775,7 +833,7 @@ td.right { text-align: right; }
 
     <!-- 4. GRUP: FORMA + LISTA E PUNËVE + ARKIVA E PUNËVE -->
     <div class="group-card" id="entries-group-card">
-      <div class="group-card-header is-open" onclick="toggleGroupCard('entries-group-card')">
+      <div class="group-card-header" onclick="toggleGroupCard('entries-group-card')">
         <div class="group-card-title accent">
           📋 Punët
         </div>
@@ -784,11 +842,11 @@ td.right { text-align: right; }
           <button class="btn-export" onclick="exportCSV()" style="font-size:0.75rem;padding:7px 12px;">⬇ CSV</button>
         </div>
         <span class="group-card-toggle" id="entries-group-card-toggle">
-          <span class="group-card-icon" id="entries-group-card-icon">▼</span>
-          <span id="entries-group-card-label">Minimizo</span>
+          <span class="group-card-icon collapsed" id="entries-group-card-icon">▼</span>
+          <span id="entries-group-card-label">Zgjero</span>
         </span>
       </div>
-      <div class="group-card-body" id="entries-group-card-body">
+      <div class="group-card-body hidden" id="entries-group-card-body">
 
         <!-- FORMA SHTIM PUNË -->
         <div class="group-inner">
@@ -960,6 +1018,7 @@ let reminderTimer = null;
 let editingEntryId = null;
 let userNames = {};
 let currentUserName = '';
+let scheduleEnabled = false; // vendoset nga Supabase (app_settings) — parazgjedhje: e çaktivizuar
 
 // Kthen true VETËM nëse Supabase konfirmon is_ari_owner = true në user_roles
 function isAriOwner() {
@@ -1052,6 +1111,7 @@ async function initApp(user) {
     document.getElementById('mat-archive-wrap').style.display = 'block';
     document.getElementById('sched-archive-wrap').style.display = 'block';
     document.getElementById('ari-export-csv-btn').style.display = '';
+    document.getElementById('sched-admin-toggle').style.display = '';
     loadUsers();
   } else {
     document.getElementById('ari-export-csv-btn').style.display = 'none';
@@ -1078,11 +1138,57 @@ async function initApp(user) {
     }
   }
 
+  await loadScheduleSetting();
   await loadEntries();
   await loadSchedules();
   await loadMaterials();
   if (document.getElementById('entry-rows') && document.getElementById('entry-rows').innerHTML === '') addEntryRow();
   startReminderChecker();
+}
+
+// --- SCHEDULE FEATURE TOGGLE (Admin) ---
+async function loadScheduleSetting() {
+  try {
+    const { data, error } = await sb.from('app_settings').select('value').eq('key', 'schedule_enabled').single();
+    if (!error && data) {
+      scheduleEnabled = data.value === true || data.value === 'true';
+    } else {
+      scheduleEnabled = false;
+    }
+  } catch (e) {
+    scheduleEnabled = false;
+  }
+  applyScheduleUIState();
+}
+
+function applyScheduleUIState() {
+  const addBtn = document.getElementById('sched-add-btn');
+  const notice = document.getElementById('sched-disabled-notice');
+  const content = document.getElementById('sched-active-content');
+  const toggleBtn = document.getElementById('sched-admin-toggle');
+
+  if (addBtn) {
+    addBtn.disabled = !scheduleEnabled;
+    addBtn.style.display = scheduleEnabled ? '' : 'none';
+  }
+  if (notice) notice.style.display = scheduleEnabled ? 'none' : 'block';
+  if (content) content.style.display = scheduleEnabled ? '' : 'none';
+  if (toggleBtn) {
+    toggleBtn.textContent = scheduleEnabled ? '✅ Aktive — Çaktivizo' : '🔒 Aktivizo';
+    toggleBtn.classList.toggle('is-enabled', scheduleEnabled);
+  }
+}
+
+async function toggleScheduleFeature() {
+  if (currentRole !== 'admin') return;
+  const newVal = !scheduleEnabled;
+  const { error } = await sb.from('app_settings').upsert({ key: 'schedule_enabled', value: newVal }, { onConflict: 'key' });
+  if (error) {
+    alert('Gabim: nuk u ruajt cilësimi. Sigurohuni që tabela "app_settings" ekziston (kolonat: key text primary key, value boolean). Detaje: ' + error.message);
+    return;
+  }
+  scheduleEnabled = newVal;
+  applyScheduleUIState();
 }
 
 // --- ENTRIES ---
@@ -1478,6 +1584,7 @@ async function restoreSchedule(id) {
 }
 
 function openSchedModal() {
+  if (!scheduleEnabled) { alert('Planifikimi i punëve është i çaktivizuar. Kontaktoni adminin.'); return; }
   document.getElementById('sm-time').value = '09:00';
   document.getElementById('sm-client').value = '';
   document.getElementById('sm-desc').value = '';
@@ -1488,6 +1595,7 @@ function openSchedModal() {
 function closeSchedModal() { document.getElementById('sched-modal').classList.remove('open'); }
 
 async function saveSchedule() {
+  if (!scheduleEnabled) { alert('Planifikimi i punëve është i çaktivizuar.'); closeSchedModal(); return; }
   const date = document.getElementById('sm-date').value;
   const time = document.getElementById('sm-time').value;
   const client = document.getElementById('sm-client').value.trim();
@@ -3160,11 +3268,11 @@ function toggleAriSection() {
   const icon = document.getElementById('ari-collapse-icon');
   const label = document.getElementById('ari-collapse-label');
   const addBtn = document.getElementById('ari-add-btn');
-  const isCollapsed = body.style.display === 'none';
-  body.style.display = isCollapsed ? '' : 'none';
+  const isCollapsed = body.classList.contains('hidden');
+  body.classList.toggle('hidden', !isCollapsed);
   icon.classList.toggle('collapsed', !isCollapsed);
   label.textContent = isCollapsed ? 'Minimizo' : 'Zgjero';
-  if (addBtn) addBtn.style.display = isCollapsed ? '' : 'none';
+  if (addBtn) addBtn.style.display = (isCollapsed && isAriOwner()) ? '' : 'none';
 }
 
 // ── TOGGLE MINIMIZIM LISTA E PUNËVE ──
