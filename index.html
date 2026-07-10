@@ -72,6 +72,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-seri
 .btn-main { width: 100%; background: var(--accent); color: white; border: none; border-radius: 10px; padding: 12px; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
 .btn-main:hover { background: var(--accent2); }
 .auth-error { color: var(--danger); font-size: 0.72rem; text-align: center; margin-top: 10px; min-height: 18px; }
+.auth-link { color: var(--accent); font-size: 0.76rem; cursor: pointer; text-decoration: underline; }
+.auth-link:hover { color: var(--accent2); }
 
 /* APP */
 #app { display: none; }
@@ -535,6 +537,9 @@ td.right { text-align: right; }
       <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="email@example.com" /></div>
       <div class="field"><label>Fjalëkalimi</label><input type="password" id="login-pass" placeholder="••••••" /></div>
       <button class="btn-main" onclick="doLogin()">Hyr</button>
+      <div style="text-align:center;margin-top:12px;">
+        <span class="auth-link" onclick="showForgotForm()">Harrove fjalëkalimin?</span>
+      </div>
     </div>
     <div id="register-section" style="display:none;">
       <div class="field"><label>Emri</label><input type="text" id="reg-name" placeholder="Emri juaj" /></div>
@@ -542,6 +547,20 @@ td.right { text-align: right; }
       <div class="field"><label>Fjalëkalimi</label><input type="password" id="reg-pass" placeholder="min. 6 karaktere" /></div>
       <div class="field"><label>Konfirmo fjalëkalimin</label><input type="password" id="reg-pass2" placeholder="••••••" /></div>
       <button class="btn-main" onclick="doRegister()">Regjistrohu</button>
+    </div>
+    <div id="forgot-section" style="display:none;">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">Shkruaj email-in tënd dhe do të marrësh një link për të rivendosur fjalëkalimin.</div>
+      <div class="field"><label>Email</label><input type="email" id="forgot-email" placeholder="email@example.com" /></div>
+      <button class="btn-main" onclick="doForgotPassword()">Dërgo Linkun</button>
+      <div style="text-align:center;margin-top:12px;">
+        <span class="auth-link" onclick="showLoginForm()">← Kthehu te Hyrja</span>
+      </div>
+    </div>
+    <div id="reset-section" style="display:none;">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">Vendos fjalëkalimin e ri për llogarinë tënde.</div>
+      <div class="field"><label>Fjalëkalimi i Ri</label><input type="password" id="reset-pass" placeholder="min. 6 karaktere" /></div>
+      <div class="field"><label>Konfirmo Fjalëkalimin</label><input type="password" id="reset-pass2" placeholder="••••••" /></div>
+      <button class="btn-main" onclick="doResetPassword()">Ruaj Fjalëkalimin e Ri</button>
     </div>
     <div class="auth-error" id="auth-error"></div>
   </div>
@@ -685,7 +704,7 @@ td.right { text-align: right; }
         <div class="section-collapse-header" style="flex:1;" onclick="toggleAriSection()">
           <div>
             <span style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:#92400e;">⚡ Punët e Kryera — Ari</span>
-            <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ADMIN</div>
+            <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ARI</div>
           </div>
           <span class="section-collapse-btn" id="ari-collapse-btn">
             <span class="section-collapse-icon collapsed" id="ari-collapse-icon">▼</span>
@@ -1159,7 +1178,51 @@ function switchAuthTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'login')));
   document.getElementById('login-section').style.display = tab === 'login' ? '' : 'none';
   document.getElementById('register-section').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('forgot-section').style.display = 'none';
+  document.getElementById('reset-section').style.display = 'none';
   setAuthError('');
+}
+
+function showForgotForm() {
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('register-section').style.display = 'none';
+  document.getElementById('reset-section').style.display = 'none';
+  document.getElementById('forgot-section').style.display = '';
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  setAuthError('');
+}
+
+function showLoginForm() {
+  document.getElementById('forgot-section').style.display = 'none';
+  document.getElementById('reset-section').style.display = 'none';
+  switchAuthTab('login');
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { setAuthError('Shkruaj email-in tënd'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href.split('#')[0].split('?')[0]
+  });
+  if (error) { setAuthError(error.message); return; }
+  setAuthError('');
+  alert('✓ Nëse email-i ekziston, të është dërguar një link për rivendosjen e fjalëkalimit. Kontrollo edhe Spam.');
+  showLoginForm();
+}
+
+async function doResetPassword() {
+  const pass = document.getElementById('reset-pass').value;
+  const pass2 = document.getElementById('reset-pass2').value;
+  if (!pass || pass.length < 6) { setAuthError('Fjalëkalimi min. 6 karaktere'); return; }
+  if (pass !== pass2) { setAuthError('Fjalëkalimet nuk përputhen'); return; }
+  const { error } = await sb.auth.updateUser({ password: pass });
+  if (error) { setAuthError(error.message); return; }
+  alert('✓ Fjalëkalimi u ndryshua me sukses! Tani mund të hysh normalisht.');
+  await sb.auth.signOut();
+  document.getElementById('reset-section').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  switchAuthTab('login');
 }
 
 async function doLogin() {
