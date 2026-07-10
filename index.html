@@ -599,6 +599,12 @@ td.right { text-align: right; }
             <button class="btn-add" onclick="addUserAdmin()" style="grid-column:1/-1;min-height:48px;font-size:0.95rem;">+ Shto Përdoruesin</button>
           </div>
         </div>
+        <div class="group-inner">
+          <div class="group-inner-title">📝 Shënimet e Mia (Private)</div>
+          <div class="admin-note">🔒 Këto shënime i sheh vetëm ti — asnjë përdorues tjetër, as admin tjetër, nuk i shikon dot.</div>
+          <textarea id="admin-private-note" placeholder="Shkruaj këtu shënimet e tua personale..." oninput="scheduleSaveAdminNote()" style="width:100%;min-height:130px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-family:'Sora',sans-serif;font-size:0.85rem;resize:vertical;"></textarea>
+          <div id="admin-note-status" style="font-size:0.65rem;color:var(--muted);margin-top:6px;text-align:right;">&nbsp;</div>
+        </div>
       </div>
     </div>
 
@@ -666,7 +672,7 @@ td.right { text-align: right; }
         <div class="section-collapse-header" style="flex:1;" onclick="toggleAriSection()">
           <div>
             <span style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:#92400e;">⚡ Punët e Kryera — Ari</span>
-            <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ADMIN</div>
+            <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ARI</div>
           </div>
           <span class="section-collapse-btn" id="ari-collapse-btn">
             <span class="section-collapse-icon collapsed" id="ari-collapse-icon">▼</span>
@@ -1026,6 +1032,37 @@ function isAriOwner() {
   return currentIsAriOwner === true;
 }
 
+// --- SHËNIMET PRIVATE (vetëm admini që i shkruan i sheh, mbrojtur me RLS) ---
+let adminNoteTimer = null;
+
+async function loadAdminNote() {
+  const { data, error } = await sb
+    .from('private_notes')
+    .select('note')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+  const el = document.getElementById('admin-private-note');
+  if (el && !error && data) el.value = data.note || '';
+}
+
+function scheduleSaveAdminNote() {
+  const statusEl = document.getElementById('admin-note-status');
+  if (statusEl) statusEl.textContent = 'Duke shkruajtur...';
+  clearTimeout(adminNoteTimer);
+  adminNoteTimer = setTimeout(saveAdminNote, 700);
+}
+
+async function saveAdminNote() {
+  const note = document.getElementById('admin-private-note').value;
+  const statusEl = document.getElementById('admin-note-status');
+  const { error } = await sb.from('private_notes').upsert({
+    user_id: currentUser.id,
+    note,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id' });
+  if (statusEl) statusEl.textContent = error ? '⚠️ Gabim gjatë ruajtjes' : '✓ Ruajtur';
+}
+
 // --- AUTH ---
 function switchAuthTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'login')));
@@ -1114,6 +1151,7 @@ async function initApp(user) {
     document.getElementById('ari-export-csv-btn').style.display = '';
     document.getElementById('sched-admin-toggle').style.display = '';
     loadUsers();
+    loadAdminNote();
   } else {
     document.getElementById('ari-export-csv-btn').style.display = 'none';
   }
