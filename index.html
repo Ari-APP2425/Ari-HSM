@@ -188,6 +188,19 @@ td.right { text-align: right; }
 
 /* ADMIN */
 .admin-note { font-size: 0.7rem; color: var(--muted); margin-bottom: 14px; }
+
+/* PRIVATE NOTES (multiple, folder-style) */
+.note-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.note-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; }
+.note-card-title { font-weight: 600; font-size: 0.85rem; color: var(--text); }
+.note-card-date { font-size: 0.65rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+.note-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.note-card-body { font-size: 0.8rem; color: var(--text); white-space: pre-wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); display: none; }
+.note-card-body.open { display: block; }
+.btn-note-icon { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 4px 9px; font-size: 0.7rem; cursor: pointer; color: var(--muted); }
+.btn-note-icon:hover { border-color: var(--accent); color: var(--accent); }
+.btn-note-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
+.note-empty { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; }
 .users-tbl { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
 .users-tbl th, .users-tbl td { padding: 9px 11px; text-align: left; border-bottom: 1px solid var(--border); }
 .users-tbl th { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; }
@@ -602,8 +615,8 @@ td.right { text-align: right; }
         <div class="group-inner">
           <div class="group-inner-title">📝 Shënimet e Mia (Private)</div>
           <div class="admin-note">🔒 Këto shënime i sheh vetëm ti — asnjë përdorues tjetër, as admin tjetër, nuk i shikon dot.</div>
-          <textarea id="admin-private-note" placeholder="Shkruaj këtu shënimet e tua personale..." oninput="scheduleSaveAdminNote()" style="width:100%;min-height:130px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-family:'Sora',sans-serif;font-size:0.85rem;resize:vertical;"></textarea>
-          <div id="admin-note-status" style="font-size:0.65rem;color:var(--muted);margin-top:6px;text-align:right;">&nbsp;</div>
+          <button class="btn-ari" style="margin-bottom:14px;" onclick="openNoteModal()">+ Shënim i Ri</button>
+          <div id="private-notes-list"><div class="note-empty">Duke ngarkuar...</div></div>
         </div>
       </div>
     </div>
@@ -672,7 +685,7 @@ td.right { text-align: right; }
         <div class="section-collapse-header" style="flex:1;" onclick="toggleAriSection()">
           <div>
             <span style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:#92400e;">⚡ Punët e Kryera — Ari</span>
-            <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ARI</div>
+            <div style="font-size:0.62rem;color:#b45309;letter-spacing:0.1em;margin-top:2px;">PANEL PERSONAL · VETËM ADMIN</div>
           </div>
           <span class="section-collapse-btn" id="ari-collapse-btn">
             <span class="section-collapse-icon collapsed" id="ari-collapse-icon">▼</span>
@@ -1033,34 +1046,112 @@ function isAriOwner() {
 }
 
 // --- SHËNIMET PRIVATE (vetëm admini që i shkruan i sheh, mbrojtur me RLS) ---
-let adminNoteTimer = null;
+// Çdo shënim është një "kartelë" e veçantë: emër + datë + përmbajtje.
+let allPrivateNotes = [];
+let openNoteCardId = null;
 
-async function loadAdminNote() {
+async function loadPrivateNotes() {
+  const listEl = document.getElementById('private-notes-list');
   const { data, error } = await sb
     .from('private_notes')
-    .select('note')
+    .select('*')
     .eq('user_id', currentUser.id)
-    .maybeSingle();
-  const el = document.getElementById('admin-private-note');
-  if (el && !error && data) el.value = data.note || '';
+    .order('note_date', { ascending: false })
+    .order('created_at', { ascending: false });
+  if (error) {
+    if (listEl) listEl.innerHTML = '<div class="note-empty">⚠️ Gabim gjatë ngarkimit të shënimeve</div>';
+    return;
+  }
+  allPrivateNotes = data || [];
+  renderPrivateNotes();
 }
 
-function scheduleSaveAdminNote() {
-  const statusEl = document.getElementById('admin-note-status');
-  if (statusEl) statusEl.textContent = 'Duke shkruajtur...';
-  clearTimeout(adminNoteTimer);
-  adminNoteTimer = setTimeout(saveAdminNote, 700);
+function renderPrivateNotes() {
+  const listEl = document.getElementById('private-notes-list');
+  if (!listEl) return;
+  if (!allPrivateNotes.length) {
+    listEl.innerHTML = '<div class="note-empty">Nuk ke asnjë shënim ende. Shto një me butonin lart.</div>';
+    return;
+  }
+  listEl.innerHTML = allPrivateNotes.map(n => {
+    const dateStr = n.note_date ? new Date(n.note_date + 'T00:00:00').toLocaleDateString('sq-AL') : '';
+    const isOpen = openNoteCardId === n.id;
+    return `
+      <div class="note-card">
+        <div class="note-card-head" onclick="toggleNoteCard('${n.id}')">
+          <div>
+            <div class="note-card-title">${escapeHtml(n.title || '(Pa emër)')}</div>
+            <div class="note-card-date">📅 ${dateStr}</div>
+          </div>
+          <div class="note-card-actions" onclick="event.stopPropagation()">
+            <button class="btn-note-icon" onclick="openNoteModal('${n.id}')">✎ Ndrysho</button>
+            <button class="btn-note-icon danger" onclick="deleteNote('${n.id}')">🗑 Fshi</button>
+          </div>
+        </div>
+        <div class="note-card-body${isOpen ? ' open' : ''}" id="note-body-${n.id}">${escapeHtml(n.content || '')}</div>
+      </div>
+    `;
+  }).join('');
 }
 
-async function saveAdminNote() {
-  const note = document.getElementById('admin-private-note').value;
-  const statusEl = document.getElementById('admin-note-status');
-  const { error } = await sb.from('private_notes').upsert({
-    user_id: currentUser.id,
-    note,
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'user_id' });
-  if (statusEl) statusEl.textContent = error ? '⚠️ Gabim gjatë ruajtjes' : '✓ Ruajtur';
+function toggleNoteCard(id) {
+  openNoteCardId = openNoteCardId === id ? null : id;
+  renderPrivateNotes();
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function openNoteModal(id = null) {
+  const note = id ? allPrivateNotes.find(n => n.id === id) : null;
+  document.getElementById('note-id').value = id || '';
+  document.getElementById('note-title').value = note ? (note.title || '') : '';
+  document.getElementById('note-date').value = note ? note.note_date : new Date().toISOString().slice(0, 10);
+  document.getElementById('note-content').value = note ? (note.content || '') : '';
+  document.getElementById('note-modal-title').textContent = id ? '✎ Ndrysho Shënimin' : '📝 Shënim i Ri';
+  document.getElementById('note-modal').classList.add('open');
+}
+
+function closeNoteModal() {
+  document.getElementById('note-modal').classList.remove('open');
+}
+
+async function saveNote() {
+  const id = document.getElementById('note-id').value;
+  const title = document.getElementById('note-title').value.trim();
+  const note_date = document.getElementById('note-date').value;
+  const content = document.getElementById('note-content').value;
+
+  if (!title) { alert('Vendos një emër për shënimin.'); return; }
+  if (!note_date) { alert('Vendos një datë.'); return; }
+
+  if (id) {
+    const { error } = await sb.from('private_notes')
+      .update({ title, note_date, content, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', currentUser.id);
+    if (error) { alert('⚠️ Gabim gjatë ruajtjes: ' + error.message); return; }
+  } else {
+    const { error } = await sb.from('private_notes').insert({
+      user_id: currentUser.id,
+      title, note_date, content,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+    if (error) { alert('⚠️ Gabim gjatë ruajtjes: ' + error.message); return; }
+  }
+  closeNoteModal();
+  await loadPrivateNotes();
+}
+
+async function deleteNote(id) {
+  if (!confirm('A je i sigurt që do ta fshish këtë shënim?')) return;
+  const { error } = await sb.from('private_notes').delete().eq('id', id).eq('user_id', currentUser.id);
+  if (error) { alert('⚠️ Gabim gjatë fshirjes: ' + error.message); return; }
+  await loadPrivateNotes();
 }
 
 // --- AUTH ---
@@ -1151,7 +1242,7 @@ async function initApp(user) {
     document.getElementById('ari-export-csv-btn').style.display = '';
     document.getElementById('sched-admin-toggle').style.display = '';
     loadUsers();
-    loadAdminNote();
+    loadPrivateNotes();
   } else {
     document.getElementById('ari-export-csv-btn').style.display = 'none';
   }
@@ -3395,6 +3486,26 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 </script>
+
+<!-- MODAL SHENIM PRIVAT -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title" id="note-modal-title">📝 Shënim i Ri</div>
+    <input type="hidden" id="note-id" />
+    <div class="modal-fields">
+      <div class="f"><label>Emri i Shënimit</label><input type="text" id="note-title" placeholder="p.sh. Puna te klienti XXX" /></div>
+      <div class="f"><label>Data</label><input type="date" id="note-date" /></div>
+      <div class="f">
+        <label>Përmbajtja</label>
+        <textarea id="note-content" placeholder="Shkruaj shënimin këtu..." style="min-height:150px;resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeNoteModal()">Anulo</button>
+      <button class="btn-save" onclick="saveNote()">✔ Ruaj</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL MATERIALET -->
 <div class="modal-overlay" id="mat-modal">
