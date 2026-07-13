@@ -199,66 +199,7 @@ td.right { text-align: right; }
 @media (max-width: 700px) {
   .ari-table-wrap { display: none; }
   .ari-cards { display: flex; }
-  .entries-table-wrap { display: none; }
-  .entries-cards { display: flex; }
-  .mat-table-wrap { display: none; }
-  .mat-cards { display: flex; }
 }
-
-/* PUNËT (entries + arkiva) — KARTELA PËR MOBILE */
-.entries-cards { display: none; flex-direction: column; gap: 10px; }
-.entry-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-  padding: 12px 14px; box-shadow: 0 1px 4px rgba(45,125,111,0.06);
-}
-.entry-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
-.entry-card-dc { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.entry-card-date { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); }
-.entry-card-client { font-size: 0.9rem; font-weight: 700; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.entry-card-tick {
-  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.95rem; font-weight: 700; color: white; cursor: pointer;
-  transition: transform 0.1s;
-}
-.entry-card-tick:active { transform: scale(0.92); }
-.entry-card-tick.paid { background: #15803d; }
-.entry-card-tick.unpaid { background: #c0392b; }
-.entry-card-nums {
-  display: flex; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border);
-  padding: 8px 0; margin-bottom: 10px; gap: 6px;
-}
-.entry-card-nums > div { flex: 1; text-align: center; }
-.entry-card-nums > div:not(:last-child) { border-right: 1px solid var(--border); }
-.entry-card-lbl { display: block; font-size: 0.56rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
-.entry-card-val { display: block; font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--text); }
-.entry-card-val.strong { font-weight: 700; color: var(--accent); font-size: 0.88rem; }
-.entry-card-desc-lbl { font-size: 0.56rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
-.entry-card-desc { font-size: 0.82rem; color: var(--text); line-height: 1.4; word-break: break-word; white-space: pre-wrap; margin-bottom: 10px; }
-.entry-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.entry-card-actions { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-.entry-card-restore { background: #eef2f7; color: #475569; border: 1px solid #cbd5e1; border-radius: 7px; padding: 4px 10px; font-size: 0.68rem; font-weight: 600; cursor: pointer; }
-
-/* MATERIALET — KARTELA PËR MOBILE */
-.mat-cards { display: none; flex-direction: column; gap: 8px; padding: 10px; }
-.mat-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-  padding: 11px 13px; box-shadow: 0 1px 4px rgba(124,58,237,0.06);
-}
-.mat-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-.mat-card-dc { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.mat-card-date { font-family: 'DM Mono', monospace; font-size: 0.66rem; color: var(--muted); }
-.mat-card-name { font-size: 0.86rem; font-weight: 700; color: #7c3aed; word-break: break-word; }
-.mat-card-nums {
-  display: flex; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border);
-  padding: 7px 0; margin-bottom: 8px; gap: 6px;
-}
-.mat-card-nums > div { flex: 1; text-align: center; }
-.mat-card-nums > div:not(:last-child) { border-right: 1px solid var(--border); }
-.mat-card-lbl { display: block; font-size: 0.54rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
-.mat-card-val { display: block; font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--text); }
-.mat-card-val.strong { font-weight: 700; color: #5b21b6; font-size: 0.84rem; }
-.mat-card-actions { display: flex; justify-content: flex-end; gap: 4px; }
 
 /* FILTERS */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
@@ -346,6 +287,44 @@ td.right { text-align: right; }
   background: #c6f6d5; color: #276749;
 }
 .mat-status-closed:hover { background: #9ae6b4; }
+
+/* MATERIALET — KARTELA PËR MOBILE (zëvendëson tabelën në ekrane të vogla) */
+.mat-cards { display: none; flex-direction: column; gap: 10px; }
+.mat-card {
+  background: #fff; border: 1px solid #e9d8fd; border-radius: 14px;
+  padding: 12px 14px; box-shadow: 0 1px 4px rgba(124,58,237,0.06);
+}
+.mat-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.mat-card-dc { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mat-card-date { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+.mat-card-name { font-size: 0.9rem; font-weight: 700; color: #5b21b6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-card-tick {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem; font-weight: 700; color: white; cursor: pointer;
+  transition: transform 0.1s;
+}
+.mat-card-tick:active { transform: scale(0.92); }
+.mat-card-tick.paid { background: #15803d; }
+.mat-card-tick.unpaid { background: #c0392b; }
+.mat-card-nums {
+  display: flex; border-top: 1px dashed #ede9fe; border-bottom: 1px dashed #ede9fe;
+  padding: 8px 0; margin-bottom: 10px; gap: 6px;
+}
+.mat-card-nums > div { flex: 1; text-align: center; }
+.mat-card-nums > div:not(:last-child) { border-right: 1px solid #ede9fe; }
+.mat-card-lbl { display: block; font-size: 0.56rem; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+.mat-card-val { display: block; font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--text); }
+.mat-card-val.strong { font-weight: 700; color: #5b21b6; font-size: 0.88rem; }
+.mat-card-desc-lbl { font-size: 0.56rem; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.mat-card-desc { font-size: 0.82rem; color: var(--text); line-height: 1.4; word-break: break-word; white-space: pre-wrap; }
+.mat-card-user { font-size: 0.62rem; color: var(--muted); margin-top: 6px; }
+.mat-card-actions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 10px; }
+
+@media (max-width: 700px) {
+  .mat-table-wrap { display: none; }
+  .mat-cards { display: flex; }
+}
 
 /* ARCHIVE */
 .archive-color { color: #64748b; }
@@ -3046,12 +3025,13 @@ function renderMatArchive() {
         </div>
         ${canAdmin ? `<button class="mat-status-btn mat-status-open" data-client="${clientEsc}" onclick="toggleMatStatus(this.dataset.client)" style="font-size:0.72rem;padding:5px 12px;">↩ Hap Sërisht</button>` : ''}
       </div>
-      <div class="tbl-wrap" style="border:none;border-radius:0;">
+      <div class="tbl-wrap mat-table-wrap" style="border:none;border-radius:0;">
         <table>
           <thead><tr><th>Data</th><th>Materiali</th><th>Sasia</th><th>Çmimi</th><th>Totali</th><th>Perdoruesi</th><th>Veprime</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
+      <div class="mat-cards">${items.map(e => matCardHTML(e, { isClosed: true, canDel: currentRole === 'admin' || e.user_id === currentUser?.id, canAdmin: canAdmin, client, isArchive: true })).join('')}</div>
     </div>`;
   }).join('');
 }
@@ -3060,6 +3040,37 @@ async function deleteArchivedMaterial(id) {
   if (!confirm('Fshi përgjithmonë këtë material nga arkiva?')) return;
   await sb.from('materials').delete().eq('id', id);
   await loadMaterials();
+}
+
+// Ndërton HTML e një kartele Materiali (përdoret nga renderMaterials dhe renderMatArchive)
+function matCardHTML(e, opts) {
+  const isClosed = opts.isClosed;
+  const canDel = opts.canDel;
+  const canAdmin = opts.canAdmin;
+  const clientEsc = esc(opts.client || e.client);
+  const total = (e.quantity || 0) * (e.price || 0);
+  const tickAttrs = canAdmin ? `onclick="toggleMatStatus('${clientEsc}')"` : '';
+  return `<div class="mat-card">
+    <div class="mat-card-top">
+      <div class="mat-card-dc">
+        <span class="mat-card-date">${fmtDate(e.date)}</span>
+        <span class="mat-card-name">${esc(e.material_name)}</span>
+      </div>
+      <div class="mat-card-tick ${isClosed ? 'paid' : 'unpaid'}" ${tickAttrs} title="${isClosed ? 'E Mbyllur — kliko për ta ndryshuar' : 'E Hapur — kliko për ta ndryshuar'}">${isClosed ? '✓' : '✕'}</div>
+    </div>
+    <div class="mat-card-nums">
+      <div><span class="mat-card-lbl">Sasia</span><span class="mat-card-val">${e.quantity}</span></div>
+      <div><span class="mat-card-lbl">Çmimi</span><span class="mat-card-val">${e.price ? fmtPrice(e.price) : '—'}</span></div>
+      <div><span class="mat-card-lbl">Totali</span><span class="mat-card-val strong">${total ? fmtPrice(total) : '—'}</span></div>
+    </div>
+    <div class="mat-card-desc-lbl">Klienti</div>
+    <div class="mat-card-desc">${clientEsc}</div>
+    <div class="mat-card-user">👤 ${esc(e.user_name || e.user_email?.split('@')[0] || '')}</div>
+    ${canDel ? `<div class="mat-card-actions">
+      <button class="btn-icon edit" title="Modifiko" onclick="editMaterialById('${e.id}')" style="color:#7c3aed;">✏️</button>
+      <button class="btn-icon del" onclick="${opts.isArchive ? 'deleteArchivedMaterial' : 'deleteMaterial'}('${e.id}')">🗑</button>
+    </div>` : ''}
+  </div>`;
 }
 
 function renderMaterials() {
@@ -3130,12 +3141,13 @@ function renderMaterials() {
           <button class="btn-mat" data-client="${clientEsc}" onclick="openMatModal(this.dataset.client)" style="padding:5px 12px;font-size:0.75rem;">+ Shto Materiale tek Klienti</button>
         </div>
       </div>
-      <div class="tbl-wrap" style="border:none;border-radius:0;">
+      <div class="tbl-wrap mat-table-wrap" style="border:none;border-radius:0;">
         <table>
           <thead><tr><th>Data</th><th>Materiali</th><th>Sasia</th><th>Çmimi</th><th>Totali</th><th>Perdoruesi</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
+      <div class="mat-cards">${items.map(e => matCardHTML(e, { isClosed, canDel: currentRole === 'admin' || e.user_id === currentUser?.id, canAdmin: currentRole === 'admin', client, isArchive: false })).join('')}</div>
     </div>`;
   }).join('');
 }
