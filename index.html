@@ -1254,6 +1254,11 @@ async function deleteNote(id) {
 }
 
 // --- AUTH ---
+function setAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  if (el) el.textContent = msg || '';
+}
+
 function switchAuthTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'login')));
   document.getElementById('login-section').style.display = tab === 'login' ? '' : 'none';
